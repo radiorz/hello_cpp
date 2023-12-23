@@ -67,6 +67,6 @@ int main()
   eventBus.off("event1", event1Callback);
 
   eventBus.emit("event1"); // 不会触发已移除的事件监听器
-
+  eventBus.emit("event2");
   return 0;
 }
