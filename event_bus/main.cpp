@@ -24,11 +24,10 @@ public:
       std::vector<EventCallback> &listeners = it->second;
       listeners.erase(std::remove_if(listeners.begin(), listeners.end(),
                                      [&callback](const EventCallback &cb)
-                                     { return &cb == &callback; }),
+                                     { return cb.target<void()>() == callback.target<void()>(); }),
                       listeners.end());
     }
   }
-
   // 触发事件
   void emit(const std::string &eventName)
   {
