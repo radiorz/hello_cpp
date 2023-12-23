@@ -2,6 +2,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <algorithm> // 添加此头文件
 
 class EventBus
 {
@@ -60,8 +61,11 @@ int main()
   eventBus.emit("event2");
 
   // 移除事件监听器
-  eventBus.off("event1", []()
-               { std::cout << "Event 1 listener removed." << std::endl; });
+  EventCallback event1Callback = []()
+  {
+    std::cout << "Event 1 listener removed." << std::endl;
+  };
+  eventBus.off("event1", event1Callback);
 
   eventBus.emit("event1"); // 不会触发已移除的事件监听器
 
