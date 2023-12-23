@@ -14,6 +14,16 @@ public:
   {
     eventListeners[eventName].push_back(callback);
   }
+  // 只监听一次
+  void once(const std::string &eventName, const EventCallback &callback)
+  {
+    EventCallback wrappedCallback = [this, eventName, callback]()
+    {
+      off(eventName, callback); // 接收到消息后取消监听
+      callback();
+    };
+    eventListeners[eventName].push_back(wrappedCallback);
+  }
 
   // 移除事件监听器
   void off(const std::string &eventName, const EventCallback &callback)
@@ -52,15 +62,18 @@ int main()
   EventBus eventBus;
   EventBus::EventCallback event1Callback = []()
   { std::cout << "Event 1 triggered." << std::endl; };
-                                           // 注册事件监听器
+  // 注册事件监听器
   eventBus.on("event1", event1Callback);
 
   eventBus.on("event2", []()
               { std::cout << "Event 2 triggered." << std::endl; });
-
+  eventBus.once("event3", []()
+                { std::cout << "Event 3 triggered." << std::endl; });
   // 触发事件
   eventBus.emit("event1");
   eventBus.emit("event2");
+  eventBus.emit("event3");
+  eventBus.emit("event3");
 
   // 移除事件监听器
 
