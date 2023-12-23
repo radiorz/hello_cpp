@@ -2,7 +2,7 @@
 #include <functional>
 #include <map>
 #include <vector>
-#include <algorithm> // 添加此头文件
+#include <algorithm>
 
 class EventBus
 {
@@ -22,7 +22,10 @@ public:
     if (it != eventListeners.end())
     {
       std::vector<EventCallback> &listeners = it->second;
-      listeners.erase(std::remove(listeners.begin(), listeners.end(), callback), listeners.end());
+      listeners.erase(std::remove_if(listeners.begin(), listeners.end(),
+                                     [&callback](const EventCallback &cb)
+                                     { return &cb == &callback; }),
+                      listeners.end());
     }
   }
 
@@ -48,10 +51,10 @@ private:
 int main()
 {
   EventBus eventBus;
-
-  // 注册事件监听器
-  eventBus.on("event1", []()
-              { std::cout << "Event 1 triggered." << std::endl; });
+  EventBus::EventCallback event1Callback = []()
+  { std::cout << "Event 1 triggered." << std::endl; };
+                                           // 注册事件监听器
+  eventBus.on("event1", event1Callback);
 
   eventBus.on("event2", []()
               { std::cout << "Event 2 triggered." << std::endl; });
@@ -61,10 +64,7 @@ int main()
   eventBus.emit("event2");
 
   // 移除事件监听器
-  EventCallback event1Callback = []()
-  {
-    std::cout << "Event 1 listener removed." << std::endl;
-  };
+
   eventBus.off("event1", event1Callback);
 
   eventBus.emit("event1"); // 不会触发已移除的事件监听器
