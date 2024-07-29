@@ -7,26 +7,30 @@
 class EventBus
 {
 public:
-  using EventCallback = std::function<void()>;
+  template <typename T, typename... Args>
+  using EventCallback = std::function<void(T arg, Args... args)>;
 
   // 注册事件监听器
-  void on(const std::string &eventName, const EventCallback &callback)
+  template <typename T, typename... Args>
+  void on(const std::string &eventName, const EventCallback<T, Args...> &callback)
   {
     eventListeners[eventName].push_back(callback);
   }
   // 只监听一次
-  void once(const std::string &eventName, const EventCallback &callback)
+  template <typename T, typename... Args>
+  void once(const std::string &eventName, const EventCallback<T, Args...> &callback)
   {
-    EventCallback wrappedCallback = [this, eventName, callback]()
+    EventCallback<T, Args...> wrappedCallback = [this, eventName, callback](T arg, Args... args)
     {
       off(eventName, callback); // 接收到消息后取消监听
-      callback();
+      callback(arg, args...);
     };
     eventListeners[eventName].push_back(wrappedCallback);
   }
 
   // 移除事件监听器
-  void off(const std::string &eventName, const EventCallback &callback)
+  template <typename T, typename... Args>
+  void off(const std::string &eventName, const EventCallback<T, Args...> &callback)
   {
     auto it = eventListeners.find(eventName);
     if (it != eventListeners.end())
@@ -39,6 +43,7 @@ public:
     }
   }
   // 触发事件
+  template <typename T, typename... Args>
   void emit(const std::string &eventName)
   {
     auto it = eventListeners.find(eventName);
@@ -53,14 +58,15 @@ public:
   }
 
 private:
-  std::map<std::string, std::vector<EventCallback>> eventListeners;
+  template <typename T, typename... Args>
+  std::map<std::string, std::vector<EventCallback<T, Args...>>> eventListeners;
 };
 
 // 示例用法
 int main()
 {
   EventBus eventBus;
-  EventBus::EventCallback event1Callback = []()
+  EventBus::EventCallback<void> event1Callback = []()
   { std::cout << "Event 1 triggered." << std::endl; };
   // 注册事件监听器
   eventBus.on("event1", event1Callback);
